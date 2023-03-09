@@ -31,8 +31,8 @@ def create_parquet(year=2022):
         path = f"./data/data_{q}_{year}/*.csv"
         
         df = pl.DataFrame()
-        path = path.sort()
-        for fname in glob.glob(path):
+        path = path
+        for fname in glob.glob(path).sort():
             print(fname)
             df_new = pl.read_csv(fname, columns= col_list)
             df_new =  df_new.with_columns(pl.col(col_list[5:]).cast(pl.Int64, strict=False))
