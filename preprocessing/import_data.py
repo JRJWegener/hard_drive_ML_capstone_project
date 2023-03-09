@@ -6,7 +6,7 @@ def create_column_list():
     """creates a list of columns for importing
 
     Returns:
-        list: _description_
+        list: list of columns for importing
     """
     #number of the smart features to be imported
     number_list = [1,3,4,5,7,9,10,12,187,188,192,193,194,197,198,199]    
@@ -31,11 +31,11 @@ def create_parquet(year=2022):
         path = f"./data/data_{q}_{year}/*.csv"
         
         df = pl.DataFrame()
-
+        path = path.sort()
         for fname in glob.glob(path):
             print(fname)
             df_new = pl.read_csv(fname, columns= col_list)
-            df_new =  df_new.with_columns(pl.col(col_list[:-4]).cast(pl.Int64, strict=False))
+            df_new =  df_new.with_columns(pl.col(col_list[5:]).cast(pl.Int64, strict=False))
             #df_select = df_new.select(col_list)
             df = pl.concat([df,df_new], rechunk=True)
 
