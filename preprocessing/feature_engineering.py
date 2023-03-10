@@ -79,7 +79,7 @@ def feature_creation(year=2022):
     fail_dict = create_faildate_dict(df_all)
     df_date = create_faildate(df_all, fail_dict)
     df_classified = create_target_classification(df_date)
-    df_classified.write_parquet(f'./data/{year}_data_selected.parquet')
+    df_classified.write_parquet(f'./data/{year}_data_target.parquet')
     print("")
     search_faulty_drives(df)
 
