@@ -36,7 +36,7 @@ def create_faildate(df, fail_dict):
     #map the dictionary to the DataFrame
     df_with_faildates = df.with_columns(pl.col("serial_number").map_dict(fail_dict).alias("faildate"))
     #cast the Dates into datetime format
-    df_with_faildates = df.with_columns(pl.col(['date','faildate']).str.strptime(pl.Date, fmt='%Y-%m-%d'), strict=False)
+    df_with_faildates = df_with_faildates.with_columns(pl.col(['date','faildate']).str.strptime(pl.Date, fmt='%Y-%m-%d'), strict=False)
     df_with_faildates.drop_in_place("strict")
     return df_with_faildates
 
@@ -75,13 +75,18 @@ def search_faulty_drives(df):
 
 
 def feature_creation(year=2022):
+    """main function to create target feature (failure in 14 days (0/1) from a .parquet file)
+
+    Args:
+        year (int, optional): year that specifies which parquet file should be used. Defaults to 2022.
+    """
     df_all = pl.read_parquet(f'./data/{year}_data_selected.parquet')
     fail_dict = create_faildate_dict(df_all)
     df_date = create_faildate(df_all, fail_dict)
     df_classified = create_target_classification(df_date)
     df_classified.write_parquet(f'./data/{year}_data_target.parquet')
-    print("")
-    search_faulty_drives(df)
+    print("DataFrame with target feature saved as .parquet file")
+    search_faulty_drives(df_classified)
 
 
 
