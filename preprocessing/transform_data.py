@@ -62,11 +62,31 @@ def transform_rocket(list_df,df_rocket):
         else: 
             feature_dict["target"] = 0
         df_rocket = df_rocket.append(feature_dict, ignore_index = True)
-
-
+    df_rocket["target"] = df_rocket["target"].astype(int)
     return(df_rocket)
 
 
+def get_serial(df, modelnumber="ST4000DM000"):
+    serial_numbers = df.filter(pl.col("model") == modelnumber)["serial_number"].unique()
+    return serial_numbers
+
+
+def get_time_series(df, serial_numbers):
+    list_df_serial = []
+    for s in serial_numbers:
+        df_serial = df.filter(pl.col("serial_number") == s)
+        list_df_serial.append(df_serial)
+    return list_df_serial
+
+
+def transform_all(dataframe, df_rocket):
+    serialnr = get_serial(dataframe)
+    list_serial = get_time_series(dataframe, serialnr)
+    for df in list_serial:
+        list_df = timeseries_batches(df)
+        df_rocket = transform_rocket(list_df,df_rocket)
+    return df_rocket
+       
 
 
 if __name__ == "__main__":
