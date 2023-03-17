@@ -71,21 +71,20 @@ def get_serial(df, modelnumber="ST4000DM000"):
     return serial_numbers
 
 
-def get_time_series(df, serial_numbers):
-    list_df_serial = []
+def transform_all(dataframe, serial_numbers,df_rocket):
+    counter = 0
+    op_length = len(serial_numbers)
     for s in serial_numbers:
-        df_serial = df.filter(pl.col("serial_number") == s)
-        list_df_serial.append(df_serial)
-    return list_df_serial
-
-
-def transform_all(dataframe, df_rocket):
-    serialnr = get_serial(dataframe)
-    list_serial = get_time_series(dataframe, serialnr)
-    for df in list_serial:
-        list_df = timeseries_batches(df)
+        df_serial = dataframe.filter(pl.col("serial_number") == s)
+        list_df = timeseries_batches(df_serial)
         df_rocket = transform_rocket(list_df,df_rocket)
+        print(f"{counter} of {op_length}")
+        counter += 1
     return df_rocket
+
+
+
+
        
 
 
