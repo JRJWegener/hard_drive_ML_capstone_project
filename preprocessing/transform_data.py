@@ -1,15 +1,18 @@
 import polars as pl
 import pandas as pd
 
-def feature_list():
+def feature_list(target=True):
     """creates a list of columns which should be used for transforming
 
     Returns:
         col_list: list of columns for importing
     """
     #number of the smart features to be imported
-    number_list = [1,3,4,5,7,9,10,12,187,188,192,193,194,197,198,199]    
-    col_list = [] # ['serial_number', 'failure']
+    number_list = [1,3,4,5,7,9,10,12,187,188,192,193,194,197,198,199]
+    if target == True:
+        col_list = ["target"]
+    else:
+        col_list = []
     for n in number_list:
     #   string1 = f"smart_{n}_normalized"
         string2 = f"smart_{n}_raw"
@@ -39,22 +42,28 @@ def timeseries_batches(df, window=14):
     return(list_df)
 
 
-def transform_rocket(list_df, df_rocket):
+def transform_rocket(list_df,df_rocket):
     """transform batches of time series in a list of DataFrames into a DataFrame format for sktime rocket.
 
     Args:
         list_df (list of DataFrames): time series batches in a list
+        targets (pandas Series): series of classification targets for the time series batches
         df_rocket (pandas DataFrame): DataFrame to which the time series should be added (in sktime rocket format)
     Returns:
-        df_rocket (pandas DataFrame): DataFrame with new row with time series from the list of DataFrames.
+        df_rocket(pandas DataFrame): DataFrame with new row with time series from the list of DataFrames.
     """
-    features = feature_list()
+    features = feature_list(target=False)
     for df in list_df:
         feature_dict = {}
         for f in features:
             feature_dict[f] = (df[f]).reset_index(drop=True)
-
+        if 1 in df["failing_in14days"].unique():
+            feature_dict["target"] = 1
+        else: 
+            feature_dict["target"] = 0
         df_rocket = df_rocket.append(feature_dict, ignore_index = True)
+
+
     return(df_rocket)
 
 
