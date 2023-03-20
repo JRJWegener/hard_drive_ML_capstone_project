@@ -39,7 +39,17 @@ def timeseries_batches(df, window=14):
         df_cut = df_sorted
     #create batches of window size as a list of dataframes
     list_df = [df_cut[i:i+window] for i in range(0,len(df_cut),window)]
+#    for l in list_df:
+#        l.reset_index(inplace=True, drop=True)
     return(list_df)
+
+
+def concat_batches(df_rocket, list_df):
+    lower_limit = len(df_rocket.index.levels[0])
+    upper_limit = lower_limit + len(list_df)
+    df_batches = pd.concat(list_df, axis=0, keys=range(lower_limit, upper_limit))
+    df_return = pd.concat([df_rocket, df_batches], axis=0)
+    return df_return
 
 
 def transform_rocket(list_df,df_rocket):
@@ -56,7 +66,7 @@ def transform_rocket(list_df,df_rocket):
     for df in list_df:
         feature_dict = {}
         for f in features:
-            feature_dict[f] = (df[f]).reset_index(drop=True)
+            feature_dict[f] = list((df[f]).reset_index(drop=True))
         if 1 in df["failing_in14days"].unique():
             feature_dict["target"] = 1
         else: 
@@ -71,21 +81,26 @@ def get_serial(df, modelnumber="ST4000DM000"):
     return serial_numbers
 
 
-def get_time_series(df, serial_numbers):
-    list_df_serial = []
+def transform_all(dataframe, serial_numbers,df_rocket):
+
+    counter = 0
+    op_length = len(serial_numbers)
     for s in serial_numbers:
-        df_serial = df.filter(pl.col("serial_number") == s)
-        list_df_serial.append(df_serial)
-    return list_df_serial
-
-
-def transform_all(dataframe, df_rocket):
-    serialnr = get_serial(dataframe)
-    list_serial = get_time_series(dataframe, serialnr)
-    for df in list_serial:
-        list_df = timeseries_batches(df)
-        df_rocket = transform_rocket(list_df,df_rocket)
+        df_serial = dataframe.filter(pl.col("serial_number") == s)
+        list_df = timeseries_batches(df_serial)
+        df_rocket = concat_batches(df_rocket, list_df)
+    #    df_rocket = transform_rocket(list_df,df_rocket)
+        if counter % 100 == 0:
+            print(f"{counter} of {op_length}")
+        counter += 1
     return df_rocket
+
+
+#def batchwise(dataframe, serial_numbers,df_rocket):
+#    slicer = 1500
+#    batches = []
+#    for d in range(1, divider):
+
        
 
 
