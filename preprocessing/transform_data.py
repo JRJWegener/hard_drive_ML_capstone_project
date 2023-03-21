@@ -34,13 +34,16 @@ def timeseries_batches(df, window=14):
     df_sorted = df.sort(by="date").to_pandas()
     #cut df down to multiples of the window size (cutoff happens at beginning)
     if leftover != 0:
-        df_cut = df_sorted.loc[leftover: , :]
+        if length <= 13:
+                return None
+        else:
+            df_cut = df_sorted.loc[leftover: , :]
     else:
         df_cut = df_sorted
     #create batches of window size as a list of dataframes
     list_df = [df_cut[i:i+window] for i in range(0,len(df_cut),window)]
-#    for l in list_df:
-#        l.reset_index(inplace=True, drop=True)
+    for l in list_df:
+        l.reset_index(inplace=True, drop=True)
     return(list_df)
 
 
@@ -88,6 +91,8 @@ def transform_all(dataframe, serial_numbers,df_rocket):
     for s in serial_numbers:
         df_serial = dataframe.filter(pl.col("serial_number") == s)
         list_df = timeseries_batches(df_serial)
+        if list_df == None:
+            continue
         df_rocket = concat_batches(df_rocket, list_df)
     #    df_rocket = transform_rocket(list_df,df_rocket)
         if counter % 100 == 0:
