@@ -1,5 +1,6 @@
 import polars as pl
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 def feature_list(target=True):
     """creates a list of columns which should be used for transforming
@@ -106,7 +107,44 @@ def transform_all(dataframe, serial_numbers,df_rocket):
 #    batches = []
 #    for d in range(1, divider):
 
-       
+def filter_out_inconsistent_drives(df):
+    inconsistent_drives = pd.read_csv("./data/Faulty_drives.csv", header=None)
+    df_new = df.filter(~pl.col("serial_number").is_in(list(inconsistent_drives[0])))
+    return df_new
+
+def custom_train_test_split(df, modelnumber="ST4000DM000"):
+    serial_numbers = get_serial(df, modelnumber)
+    df_serials = pd.DataFrame(list(serial_numbers))
+    df_failing = df.filter(pl.col("failure") == 1)
+    failing_serials = df_failing["serial_number"].unique()
+    df_serials["fail"] = df_serials[0].apply(lambda x: 1 if x in failing_serials else 0)
+    Train, Test = train_test_split(df_serials, stratify=df_serials["fail"])
+    return list(Train[0]), list(Test[0])
+
+def create_y(df):
+    y = []
+    for instance in df.index.levels[0]:
+        if 1.0 in list(df.loc[(instance),"failing_in14days"]):
+            y.append(1)
+        else: 
+            y.append(0)
+    return y
+
+def divide_chunks(l, n):
+     
+    # looping till length l
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+def create_chunks(df, serial_numbers, name, chunksize=1500):
+    chunks = divide_chunks(serial_numbers, chunksize)
+    counter = 1
+    for chunk in chunks:
+        my_index = pd.MultiIndex(levels=[[],[]],codes=[[],[]], names=["instances","timepoints"])
+        df_rocket = pd.DataFrame(columns= feature_list(target=False), index= my_index)
+        df_rocket = transform_all(df,chunk, df_rocket)
+        df_rocket.to_parquet(f"./data/datachunks/{name}_chunk{counter}.parquet")
+        counter += 1
 
 
 if __name__ == "__main__":
