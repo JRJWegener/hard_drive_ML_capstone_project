@@ -34,13 +34,16 @@ def timeseries_batches(df, window=14):
     df_sorted = df.sort(by="date").to_pandas()
     #cut df down to multiples of the window size (cutoff happens at beginning)
     if leftover != 0:
-        df_cut = df_sorted.loc[leftover: , :]
+        if length <= 13:
+            pass
+        else:
+            df_cut = df_sorted.loc[leftover: , :]
     else:
         df_cut = df_sorted
     #create batches of window size as a list of dataframes
     list_df = [df_cut[i:i+window] for i in range(0,len(df_cut),window)]
-#    for l in list_df:
-#        l.reset_index(inplace=True, drop=True)
+    for l in list_df:
+        l.reset_index(inplace=True, drop=True)
     return(list_df)
 
 
