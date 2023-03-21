@@ -35,7 +35,7 @@ def timeseries_batches(df, window=14):
     #cut df down to multiples of the window size (cutoff happens at beginning)
     if leftover != 0:
         if length <= 13:
-            pass
+                return None
         else:
             df_cut = df_sorted.loc[leftover: , :]
     else:
@@ -91,6 +91,8 @@ def transform_all(dataframe, serial_numbers,df_rocket):
     for s in serial_numbers:
         df_serial = dataframe.filter(pl.col("serial_number") == s)
         list_df = timeseries_batches(df_serial)
+        if list_df == None:
+            continue
         df_rocket = concat_batches(df_rocket, list_df)
     #    df_rocket = transform_rocket(list_df,df_rocket)
         if counter % 100 == 0:
