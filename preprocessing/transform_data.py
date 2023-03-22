@@ -91,6 +91,7 @@ def transform_all(dataframe, serial_numbers,df_rocket):
     op_length = len(serial_numbers)
     for s in serial_numbers:
         df_serial = dataframe.filter(pl.col("serial_number") == s)
+        df_serial = df_serial.drop_nulls(feature_list(target=False))
         list_df = timeseries_batches(df_serial)
         if list_df == None:
             continue
@@ -107,18 +108,20 @@ def transform_all(dataframe, serial_numbers,df_rocket):
 #    batches = []
 #    for d in range(1, divider):
 
+
+
 def filter_out_inconsistent_drives(df):
     inconsistent_drives = pd.read_csv("./data/Faulty_drives.csv", header=None)
     df_new = df.filter(~pl.col("serial_number").is_in(list(inconsistent_drives[0])))
     return df_new
 
-def custom_train_test_split(df, modelnumber="ST4000DM000"):
+def custom_train_test_split(df, modelnumber="ST4000DM000", RSEED=42):
     serial_numbers = get_serial(df, modelnumber)
     df_serials = pd.DataFrame(list(serial_numbers))
     df_failing = df.filter(pl.col("failure") == 1)
     failing_serials = df_failing["serial_number"].unique()
     df_serials["fail"] = df_serials[0].apply(lambda x: 1 if x in failing_serials else 0)
-    Train, Test = train_test_split(df_serials, stratify=df_serials["fail"])
+    Train, Test = train_test_split(df_serials, stratify=df_serials["fail"], random_state=RSEED)
     return list(Train[0]), list(Test[0])
 
 def create_y(df):
