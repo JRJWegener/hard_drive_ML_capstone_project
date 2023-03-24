@@ -36,7 +36,7 @@ def timeseries_batches(df, window=14):
     df_sorted = df.sort(by="date").to_pandas()
     #cut df down to multiples of the window size (cutoff happens at beginning)
     if leftover != 0:
-        if length <= 13:
+        if length <= window-1:
                 return None
         else:
             df_cut = df_sorted.loc[leftover: , :]
@@ -105,9 +105,12 @@ def get_serial(df, modelnumber="ST4000DM000"):
     return serial_numbers
 
 
-def transform_all(dataframe, serial_numbers,df_rocket):
+
+def transform_all(dataframe, serial_numbers,df_rocket, window=14):
+
     """transforms a subset of records defined by serial numbers to a sktime compatible format. The format used is: Time series panels - "pd-mutliindex" 
     (see: https://github.com/sktime/sktime/blob/main/examples/AA_datatypes_and_datasets.ipynb)
+
 
     Args:
         dataframe (polars DataFrame): DataFrame with records
@@ -122,7 +125,7 @@ def transform_all(dataframe, serial_numbers,df_rocket):
     for s in serial_numbers:
         df_serial = dataframe.filter(pl.col("serial_number") == s)
         df_serial = df_serial.drop_nulls(feature_list(target=False))
-        list_df = timeseries_batches(df_serial)
+        list_df = timeseries_batches(df_serial, window)
         if list_df == None:
             continue
         df_rocket = concat_batches(df_rocket, list_df)
@@ -194,7 +197,9 @@ def divide_chunks(series_list, chunk_size):
     for i in range(0, len(series_list), chunk_size):
         yield series_list[i:i + chunk_size]
 
-def create_chunks(df, serial_numbers, name, chunksize=1500):
+
+def create_chunks(df, serial_numbers, name, chunksize=1500, window=30):
+
     """splits and transforms a DataFrame into chunks with sktime compatible format Time series panels - "pd-mutliindex" (see: https://github.com/sktime/sktime/blob/main/examples/AA_datatypes_and_datasets.ipynb)
 
 
@@ -204,6 +209,7 @@ def create_chunks(df, serial_numbers, name, chunksize=1500):
         name (str): name which should be used in the filenames of the saved chunks. should fit into this scheme: '{name}_chunk{number}.parquet'
         chunksize (int, optional): size of the chunks that should be saved. Defaults to 1500.
     """
+
     chunks = divide_chunks(serial_numbers, chunksize)
     chunklist = list(chunks)
     chunk_len = len(chunklist)
@@ -211,7 +217,7 @@ def create_chunks(df, serial_numbers, name, chunksize=1500):
     for chunk in chunklist:
         my_index = pd.MultiIndex(levels=[[],[]],codes=[[],[]], names=["instances","timepoints"])
         df_rocket = pd.DataFrame(columns= feature_list(target=False), index= my_index)
-        df_rocket = transform_all(df,chunk, df_rocket)
+        df_rocket = transform_all(df,chunk, df_rocket, window=window)
         df_rocket.to_parquet(f"./data/datachunks/{name}_chunk{counter}.parquet")
         print(f"{counter}. chunk out of {chunk_len} processed and saved!")
         counter += 1
