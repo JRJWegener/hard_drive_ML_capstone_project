@@ -35,7 +35,7 @@ def timeseries_batches(df, window=14):
     df_sorted = df.sort(by="date").to_pandas()
     #cut df down to multiples of the window size (cutoff happens at beginning)
     if leftover != 0:
-        if length <= 13:
+        if length <= window-1:
                 return None
         else:
             df_cut = df_sorted.loc[leftover: , :]
@@ -85,14 +85,14 @@ def get_serial(df, modelnumber="ST4000DM000"):
     return serial_numbers
 
 
-def transform_all(dataframe, serial_numbers,df_rocket):
+def transform_all(dataframe, serial_numbers,df_rocket, window=14):
 
     counter = 0
     op_length = len(serial_numbers)
     for s in serial_numbers:
         df_serial = dataframe.filter(pl.col("serial_number") == s)
         df_serial = df_serial.drop_nulls(feature_list(target=False))
-        list_df = timeseries_batches(df_serial)
+        list_df = timeseries_batches(df_serial, window)
         if list_df == None:
             continue
         df_rocket = concat_batches(df_rocket, list_df)
@@ -139,13 +139,13 @@ def divide_chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def create_chunks(df, serial_numbers, name, chunksize=1500):
+def create_chunks(df, serial_numbers, name, chunksize=1500, window=30):
     chunks = divide_chunks(serial_numbers, chunksize)
     counter = 1
     for chunk in chunks:
         my_index = pd.MultiIndex(levels=[[],[]],codes=[[],[]], names=["instances","timepoints"])
         df_rocket = pd.DataFrame(columns= feature_list(target=False), index= my_index)
-        df_rocket = transform_all(df,chunk, df_rocket)
+        df_rocket = transform_all(df,chunk, df_rocket, window=window)
         df_rocket.to_parquet(f"./data/datachunks/{name}_chunk{counter}.parquet")
         counter += 1
 
