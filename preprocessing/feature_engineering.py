@@ -67,7 +67,7 @@ def search_faulty_drives(df):
     """
     faulty_drives = df.filter(pl.col('Time_till_failure') < 0 )['serial_number'].unique()
     # save results to csv
-    np.savetxt("Faulty_drives.csv", 
+    np.savetxt("./data/Faulty_drives.csv", 
            faulty_drives.to_list(),
            delimiter =", ", 
            fmt ='% s')
