@@ -168,19 +168,22 @@ def custom_train_test_split(df, modelnumber="ST4000DM000", RSEED=42):
     df_failing = df.filter(pl.col("failure") == 1)
     failing_serials = df_failing["serial_number"].unique()
     df_serials["fail"] = df_serials[0].apply(lambda x: 1 if x in failing_serials else 0)
+    #sort by serial_numbers so return of split is always the same if the data and random_sate are the same
+    df_serials = df_serials.sort_values(0)
     Train, Test = train_test_split(df_serials, stratify=df_serials["fail"], random_state=RSEED)
     return list(Train[0]), list(Test[0])
 
-def create_y(df):
+def create_y(df, pick_date = 29, stepsize = 30):
     """creates series with binary classification for each instance in the given DataFrame
 
     Args:
         df (pandas DataFrame): DataFrame with multiindexing and target encoded in column 'failing_in14days'
+        pick_date (int): date in the interval which should be chosen to look for fail state
 
     Returns:
         pandas Series: Series with target for each instance (0 = no target, 1 = target)
     """
-    y_df = df.iloc[::14, :]["failing_in14days"].astype(int).reset_index(drop=True)
+    y_df = df.iloc[pick_date::stepsize, :]["failing_in14days"].astype(int).reset_index(drop=True)
     return y_df
 
 def divide_chunks(series_list, chunk_size):
@@ -233,6 +236,7 @@ def combine_chunks(name , chunknumber):
         pandas DataFrame: DataFrame out of concatenated chunks
     """
     df = pd.DataFrame()
+    chunknumber = chunknumber + 1
     for i in range(1,chunknumber):
         df_new = pd.read_parquet(f"data/datachunks/{name}_chunk{i}.parquet")
         df = pd.concat([df, df_new])
