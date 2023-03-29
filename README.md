@@ -1,5 +1,7 @@
 # Taking your data for a spin!
 
+Project created by: https://github.com/JRJWegener, https://github.com/kelechijohn, https://github.com/freddiCoded
+
 Hard drive failure is a major problem for cloud storage businesses and maybe your very own hard drive will fail at some point and your data will be lost! In this project we use sensor data to detect hard drive failure before it happens. We transform the data into a linear format with convolutional kernels and classify with a random forest model.
 
 Lets quickly tell you about the structure of this repository!
@@ -37,7 +39,6 @@ pip install --upgrade pip
 pip install -r requirements_dev.txt
 ```
 
-The `requirements.txt` file contains the libraries needed for deployment.. of model or dashboard .. thus no jupyter or other libs used during development.
 
 
 
