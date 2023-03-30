@@ -3,9 +3,9 @@
 
 A machine learning project by 
 
-[Kelechi John](https://github.com/kelechijohn)
-[Frederik Bruns](https://github.com/freddiCoded)
-[Jakob Wegener](https://github.com/JRJWegener)
+[Kelechi John](https://github.com/kelechijohn)  
+[Frederik Bruns](https://github.com/freddiCoded)  
+[Jakob Wegener](https://github.com/JRJWegener)  
 
 ## Introduction
 Hard drive failure is a major problem for cloud storage businesses and maybe your very own hard drive will fail at some point and your data will be lost! In this project we use sensor data to detect hard drive failure before it happens. We transform the data into a linear format with convolutional kernels and classify with a random forest model.
