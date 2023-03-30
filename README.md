@@ -12,7 +12,7 @@ Hard drive failure is a major problem for cloud storage businesses and maybe you
 
 ## Structure
 
-The data import and target creating happens in this [notebook](notebooks/import_target_creation.ipynb).  
+The data import and target creation happens in this [notebook](notebooks/import_target_creation.ipynb).  
 There is one notebook where we did [exploratory Data Analysis](notebooks/EDA.ipynb).  
 After EDA we prepared the data for modeling in the [transforming](notebooks/transforming.ipynb) notebook.  
 If you want to see the modeling part, [here](notebooks/modeling.ipynb) is the place to look.  
