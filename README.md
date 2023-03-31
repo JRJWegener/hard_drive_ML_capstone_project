@@ -17,7 +17,7 @@ There is one notebook where we did [exploratory Data Analysis](notebooks/EDA.ipy
 After EDA we prepared the data for modeling in the [transforming](notebooks/transforming.ipynb) notebook.  
 If you want to see the modeling part, [here](notebooks/modeling.ipynb) is the place to look.  
 
-We tackled this problem in and out and if you would like to see a summary of our findings and methods, you can have a look at this [presentation](images/presentation.pdf)!
+We tackled this problem in and out and if you would like to see a summary of our findings and methods, you can have a look at this [presentation](presentation.pdf)!
 
 
 Download the dataset here: https://www.backblaze.com/b2/hard-drive-test-data.html#downloading-the-raw-hard-drive-test-data
